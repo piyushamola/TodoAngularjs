@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html ng-app="todoApp">
+<head>
+	 <title> TO DO List</title>
+	 <link href="angular/bootstrap.css" rel="stylesheet"/>
+	 <link href="angular/bootstrap-theme.css" rel="stylesheet"/>
+	 <script src="angular/angular.js"></script>
+	 <script>
+	 	var model ={
+	 		user:"Adam",
+	 		// items:[
+	 		// 	{action:"Buy Flowers",done:false},
+	 		// 	{action:"Get Shoes",done:false},
+	 		// 	{action:"Collect Tickets",done:true},
+	 		// 	{action:"Call Joe",done:false}
+
+
+	 		// ]
+	 	};
+	 
+	 // c1 is the constant which is used to consume non-angular entity
+	 	 // constant reutrn to the static while value can change so constant is lighter than values.
+	 	 
+	 	 var todoApp=angular.module("todoApp",[]); //[] helper module
+
+	 	 todoApp.run(function($http){
+	 	 	$http.get("todo.json").success(function(data){
+	 	 		model.items=data;
+	 	 	})
+	 	 })
+
+	 	 todoApp.filter("checkedItems",function(){ //factory function- Data In and Data Out function(todo.items)
+	 	 	return function(items,showComplete){   //worker function // app logic
+	 	 		var resultArr=[]; 
+	 	 		angular.forEach(items,function(item){
+	 	 			if(item.done==false || showComplete==true){ //uncheked by default false;
+	 	 				resultArr.push(item);
+	 	 			}
+	 	 		});
+	 	 		return resultArr;
+	 	 	}
+	 	 }).filter("completedTasks",function(){
+	 	 	return function(items,showComplete){
+	 	 		var resultArr=[];
+	 	 		angular.forEach(items,function(item){
+	 	 			if(item.done==true){
+	 	 				resultArr.push(item);
+
+	 	 			}
+	 	 		});
+	 	 		return resultArr;
+	 	 	}
+	 	 });
+	             	
+	 	todoApp.controller("ToDoCtrl",function($scope){
+	 	//$watch
+	 	//$digest
+	 	//dependent dependency
+                  $scope.todo=model;   // $scope.todo is the dependent and model is the dependency
+     //              $scope.todo:{
+     //              		{action:"Buy Flowers",done:false},
+	 			// {action:"Get Shoes",done:false},
+	 			// {action:"Collect Tickets",done:true},
+	 			// {action:"Call Joe",done:false}
+
+     //              }
+                          
+              $scope.incompleteCount=function(){
+                        var count=0;
+                        angular.forEach($scope.todo.items,function(item){
+                                      if(!item.done){
+                                      	count++;
+                                      }
+                        });
+                        return count;
+              }
+
+              $scope.warningLevel=function(){
+              	return $scope.incompleteCount()<3? "label-success":"label-warning";
+              }
+              $scope.addNewItem=function(actionText){
+              	$scope.todo.items.push({action:actionText,done:false});
+              }
+
+	 	});
+	 </script>
+	</head>
+	<body ng-controller="ToDoCtrl">
+
+         
+
+        
+
+
+
+		<div class="page-header">
+			<h1 align="center">
+				{{todo.user}}'s To Do List
+				 <!-- span tank hides when incompleteCount becomes zero -->
+				<span class="label label-default" ng-hide="incompleteCount()==0" ng-class="warningLevel()">{{incompleteCount()}}</span>
+			</h1>
+		</div>
+
+    
+
+
+		<div class="row">
+              	<div class="col-xs-3">
+              		<h2>Task Completed</h2>
+              		<ul class="list-group">
+			       <li ng-repeat="item in todo.items | completedTasks:showComplete" class="list-group-item">  
+			        {{item.action}}
+		    	   </li>
+                    </ul>
+
+		        </div>
+		   <div class="col-xs-9">
+			<div class="input-group">
+				<input class="form-control" ng-model="actionText" placeholder="ADD NEW TODO" />
+				<span class="input-group-btn">
+					<button class="btn btn-default" ng-click="addNewItem(actionText)">Add</button>
+				</span>
+			</div>
+			<table class="table table-stripped">
+				<thead>
+					<tr>
+						<th>Description</th>
+						<th>Done</th>
+
+					</tr>
+				</thead>
+				<tbody>                                      <!-- check items do the watch for show complete -->
+					<tr ng-repeat="item in todo.items | checkedItems:showComplete | orderBy:'action'"> <!-- //ng-repeat is the view  ng-repeat has a watch so every change in todo.items is rerunning in the ng-repeat-->
+						<td>{{item.action}}</td>
+						<td><input type="checkbox" ng-model="item.done"/></td> 
+						<td>{{item.done}}</td>
+					</tr>
+				</tbody>
+			</table>
+			<div class="checkbox-inline">
+				<label><input type="checkbox" ng-model="showComplete">Show Complete</label>
+			</div>
+		</div>
+		</div>
+	</body>
+	</html>

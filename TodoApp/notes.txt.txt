@@ -1,0 +1,19 @@
+node -v
+
+npm -v
+
+npm update
+npm install -g @angular/cli
+
+ng new myangular6
+
+cd myangjular6
+
+ng serve
+
+localhost:4200
+
+you should see the angular test page open in browser.
+
+
+augury -chrome debugger
